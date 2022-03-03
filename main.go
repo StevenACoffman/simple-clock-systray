@@ -1,39 +1,45 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
-	"io/ioutil"
 	"time"
 
 	"github.com/getlantern/systray"
 )
 
-var (
-	timezone string
-)
+var timezone string
 
 func main() {
 	systray.Run(onReady, onExit)
 }
 
 func onReady() {
-	timezone = "Local"
+	// set initial default time zone
+	timezone = "America/Los_Angeles"
 
-	systray.SetIcon(getIcon("assets/clock.ico"))
+	//systray.SetTemplateIcon(icon.GetIcon(), icon.GetIcon())
 
 	localTime := systray.AddMenuItem("Local time", "Local time")
-	hcmcTime := systray.AddMenuItem("Ho Chi Minh time", "Asia/Ho_Chi_Minh")
+	hcmcTime := systray.AddMenuItem("Ann Arbor", "America/Detroit")
+	sfTime := systray.AddMenuItem("San Fransisco time", "America/Los_Angeles")
 	sydTime := systray.AddMenuItem("Sydney time", "Australia/Sydney")
 	gdlTime := systray.AddMenuItem("Guadalajara time", "America/Mexico_City")
-	sfTime := systray.AddMenuItem("San Fransisco time", "America/Los_Angeles")
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("Quit", "Quits this app")
+
+	go func() {
+		<-mQuit.ClickedCh
+		fmt.Println("Requesting quit")
+		systray.Quit()
+		fmt.Println("Finished quitting")
+	}()
 
 	go func() {
 		for {
 			systray.SetTitle(getClockTime(timezone))
 			systray.SetTooltip(timezone + " timezone")
-			time.Sleep(1 * time.Second)
+			time.Sleep(1 * time.Second) // we could probably wake up less often?
 		}
 	}()
 
@@ -66,13 +72,5 @@ func getClockTime(tz string) string {
 	t := time.Now()
 	utc, _ := time.LoadLocation(tz)
 
-	return t.In(utc).Format("15:04:05")
-}
-
-func getIcon(s string) []byte {
-	b, err := ioutil.ReadFile(s)
-	if err != nil {
-		fmt.Print(err)
-	}
-	return b
+	return t.In(utc).Format(time.Kitchen)
 }
