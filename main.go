@@ -15,14 +15,22 @@ func main() {
 }
 
 func onReady() {
-	// set initial default time zone
+	now := time.Now()
+	zoneName, _ := now.Zone()
+	// If zoneName == EST, then assume we are in Ann Arbor, MI
+	//  and so we want to display mountain view
 	timezone = "America/Los_Angeles"
+	// If zoneName == PST, then assume we are in Mountain View, CA
+	//  so we want to display Ann Arbor, MI
+	if zoneName == "PST" {
+		timezone = "America/Detroit"
+	}
 
 	//systray.SetTemplateIcon(icon.GetIcon(), icon.GetIcon())
 
 	localTime := systray.AddMenuItem("Local time", "Local time")
 	hcmcTime := systray.AddMenuItem("Ann Arbor", "America/Detroit")
-	sfTime := systray.AddMenuItem("San Fransisco time", "America/Los_Angeles")
+	sfTime := systray.AddMenuItem("Khan HQ time", "America/Los_Angeles")
 	sydTime := systray.AddMenuItem("Sydney time", "Australia/Sydney")
 	gdlTime := systray.AddMenuItem("Guadalajara time", "America/Mexico_City")
 	systray.AddSeparator()
